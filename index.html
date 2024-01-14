@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latest Records</title>
+</head>
+<body>
+  <h1>Latest 20 Records</h1>
+  <ul id="recordsList"></ul>
+
+  <script>
+    const socket = new WebSocket('ws://localhost:3000');
+
+    socket.addEventListener('message', (event) => {
+      const recordsList = document.getElementById('recordsList');
+      const record = JSON.parse(event.data);
+
+      const listItem = document.createElement('li');
+      listItem.textContent = `Temperature: ${record.temperature}, Battery Level: ${record.batteryLevel}, TimeStamp: ${record.timeStamp}`;
+
+      recordsList.prepend(listItem);
+    });
+  </script>
+</body>
+</html>
