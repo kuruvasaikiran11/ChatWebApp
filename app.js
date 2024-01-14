@@ -34,6 +34,11 @@ app.post('/saveData', async (req, res) => {
   res.json({ message: 'Data saved successfully' });
 });
 
+app.get('/', (req, res)=>{
+  return res.status(200).json({
+      message: "Welcome to first Node app"
+  })
+})
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
