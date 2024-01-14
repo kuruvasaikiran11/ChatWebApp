@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Data Display</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      button {
+        margin: 10px auto;
+        padding: 10px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center"><u>Temperature Monitoring System</u></h1>
+    <h2>Latest 20 Records</h2>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <!-- <th>SNo</th> -->
+          <th>Temperature</th>
+          <th>Battery Level</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button onclick="backToHome()">Back to Home Page</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+      const socket = io();
+      // Fetch latest 20 records when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchLatestRecords();
+      });
+
+      socket.on("newData", (data) => {
+        updateTable(data);
+      });
+
+      function updateTable(data) {
+        const dataTable = document
+          .getElementById("dataTable")
+          .getElementsByTagName("tbody")[0];
+        const newRow = dataTable.insertRow(0);
+
+        const temperatureCell = newRow.insertCell(0);
+        temperatureCell.textContent = data.temperature;
+
+        const batteryLevelCell = newRow.insertCell(1);
+        batteryLevelCell.textContent = data.batteryLevel;
+
+        const timeStampCell = newRow.insertCell(2);
+        timeStampCell.textContent = data.timeStamp;
+
+        // Remove the extra rows to keep only the latest 20 records
+        if (dataTable.rows.length > 20) {
+          dataTable.deleteRow(-1);
+        }
+      }
+
+      async function fetchLatestRecords() {
+        try {
+          const response = await fetch("/api/latest");
+          const data = await response.json();
+
+          // Clear existing rows
+          const dataTable = document
+            .getElementById("dataTable")
+            .getElementsByTagName("tbody")[0];
+          dataTable.innerHTML = "";
+
+          // Update table with latest records
+          data.forEach((record) => {
+            updateTable(record);
+          });
+        } catch (error) {
+          console.error("Error fetching latest records:", error);
+        }
+      }
+      function backToHome() {
+        window.location.href = "/index.html";
+      }
+    </script>
+  </body>
+</html>

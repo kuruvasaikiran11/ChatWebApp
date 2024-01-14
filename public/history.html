@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historical Data Display</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>Historical Data</h1>
+    <label for="startDate">Start Date:</label>
+    <input type="datetime-local" id="startDate" name="startDate" />
+
+    <label for="endDate">End Date:</label>
+    <input type="datetime-local" id="endDate" name="endDate" />
+
+    <button onclick="fetchHistoricalData()">Fetch Data</button>
+
+    <table id="historicalDataTable">
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Temperature</th>
+          <th>Battery Level</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button onclick="backToHome()">Back to Home Page</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      function fetchHistoricalData() {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        console.log(startDate+" "+endDate);
+        if (!startDate || !endDate) {
+          console.error("Start date and end date are required.");
+          alert("Start date and end date are required.");
+          return;
+        }
+
+        fetch(
+          `/api/data?start=${encodeURIComponent(
+            startDate
+          )}&end=${encodeURIComponent(endDate)}`
+        )
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch data. Status: ${response.status}`
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const historicalDataTable = document
+              .getElementById("historicalDataTable")
+              .getElementsByTagName("tbody")[0];
+            historicalDataTable.innerHTML = "";
+
+            data.forEach((entry, index) => {
+              const newRow = historicalDataTable.insertRow(index);
+
+              const serialNumberCell = newRow.insertCell(0);
+              serialNumberCell.textContent = index + 1;
+
+              const temperatureCell = newRow.insertCell(1);
+              temperatureCell.textContent = entry.temperature;
+
+              const batteryLevelCell = newRow.insertCell(2);
+              batteryLevelCell.textContent = entry.batteryLevel;
+
+              const timeStampCell = newRow.insertCell(3);
+              timeStampCell.textContent = entry.timeStamp;
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching historical data:", error.message);
+          });
+      }
+      function backToHome(){
+        window.location.href = '/index.html';
+      }
+    </script>
+  </body>
+</html>
